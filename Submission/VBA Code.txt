@@ -1,0 +1,119 @@
+Sub StockMarket():
+
+
+    Dim ws As Worksheet
+    
+    For Each ws In ThisWorkbook.Sheets
+        Dim i As LongLong
+        Dim ticker_symbol As String 'What will go into column J
+        Dim t_volume As LongLong 'What will go into column M
+        Dim s_volume As LongLong 'What is in column G
+        Dim q_change As Double 'What will go into column k
+        Dim open_stock As Double 'What is in column c
+        Dim close_stock As Double 'What is in column f
+        Dim p_change As Double 'what will go into column L
+        Dim k As LongLong
+        Dim greatest_volume As LongLong
+        Dim greatest_percent As Double
+        Dim lowest_percent As Double
+        Dim greatest_v_ticker As String
+        Dim greatest_p_ticker As String
+        Dim least_p_ticker As String
+        Dim Lastrow As LongLong
+        
+        'got from prof, who got it from xpert
+        Lastrow = ActiveSheet.Cells(ActiveSheet.Rows.Count, 1).End(xlUp).Row
+        
+        'Setting column M to zero, what row K will start in, and what column the opening stock is
+        t_volume = 0
+        k = 2
+        open_stock = ws.Cells(2, 3).Value
+        
+        ws.Range("J1").Value = "Ticker"
+        ws.Range("K1").Value = "Quarterly Change"
+        ws.Range("L1").Value = "Percent Change"
+        ws.Range("M1").Value = "Total Volume"
+        ws.Range("Q1").Value = "Ticker"
+        ws.Range("R1").Value = "Value"
+        ws.Cells(2, 16).Value = "Greatest % Increase"
+        ws.Cells(3, 16).Value = "Greatest % Decrease"
+        ws.Cells(4, 16).Value = "Greatest Total Volume"
+        
+        'Loop from beginning to end
+        For i = 2 To Lastrow:
+            ticker_symbol = ws.Cells(i, 1).Value
+            s_volume = ws.Cells(i, 7).Value
+        'If next column doesn't equal current then
+            If (ws.Cells(i + 1, 1).Value <> ticker_symbol) Then
+                t_volume = t_volume + s_volume
+                
+                'determine what cell is closing stock and how to solve
+                close_stock = ws.Cells(i, 6).Value
+                q_change = close_stock - open_stock
+                
+                'What happens when open stock is 0, can't divide by 0
+                If (open_stock > 0) Then
+                    p_change = q_change / open_stock
+                Else
+                    p_change = 0
+                End If
+                
+                'Format quarterly change for positive, negative, and zero
+                 If (p_change > 0) Then
+                    ws.Cells(k, 11).Interior.ColorIndex = 4
+                    ws.Cells(k, 12).Interior.ColorIndex = 4
+                ElseIf (p_change < 0) Then
+                    ws.Cells(k, 11).Interior.ColorIndex = 3
+                    ws.Cells(k, 12).Interior.ColorIndex = 3
+                Else
+                    ws.Cells(k, 11).Interior.ColorIndex = 2
+                    ws.Cells(k, 12).Interior.ColorIndex = 2
+                End If
+                
+                'second leaderboard
+                If ticker_symbol = ws.Cells(2, 1).Value Then
+                    'init the variables
+                    greatest_volume = t_volume
+                    greatest_percent = p_change
+                    lowest_percent = p_change
+                Else
+                    'we need to compare the variables
+                    If t_volume > greatest_volume Then
+                        greatest_volume = t_volume
+                        
+                    End If
+                    
+                    If p_change > greatest_percent Then
+                        greatest_percent = p_change
+                    End If
+                    
+                    If p_change < lowest_percent Then
+                        lowest_percent = p_change
+                    End If
+                End If
+                        
+                'Where to put each variable
+                ws.Cells(k, 10).Value = ticker_symbol
+                ws.Cells(k, 11).Value = q_change
+                ws.Cells(k, 12).Value = p_change
+                ws.Cells(k, 13).Value = t_volume
+                ws.Cells(2, 18).Value = greatest_percent
+                ws.Cells(3, 18).Value = lowest_percent
+                ws.Cells(4, 18).Value = greatest_volume
+                
+                t_volume = 0
+                k = k + 1
+                open_stock = ws.Cells(i + 1, 3).Value
+                
+            'If next cell is the same, just add onto total volume
+            Else
+                t_volume = t_volume + s_volume
+            End If
+            
+        Next i
+    
+        'Leaderboard
+
+    Next ws
+
+End Sub
